@@ -8,41 +8,65 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual'
 function Example() {
   const listRef = React.useRef<HTMLDivElement | null>(null)
 
-  const virtualizer = useWindowVirtualizer({
+  const rowVirtualizer = useWindowVirtualizer({
     count: 10000,
+    estimateSize: () => 35,
+    overscan: 20,
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+  })
+
+
+  const columnVirtualizer = useWindowVirtualizer({
+    count: 2,
     estimateSize: () => 35,
     overscan: 5,
     scrollMargin: listRef.current?.offsetTop ?? 0,
+    horizontal: true,
   })
+
 
   return (
     <>
       <div ref={listRef} className="List">
         <div
           style={{
-            height: `${virtualizer.getTotalSize()}px`,
+            height: `${rowVirtualizer.getTotalSize()}px`,
             width: '100%',
             position: 'relative',
           }}
         >
-          {virtualizer.getVirtualItems().map((item) => (
-            <div
-              key={item.key}
-              className={item.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: `${item.size}px`,
-                transform: `translateY(${
-                  item.start - virtualizer.options.scrollMargin
-                }px)`,
-              }}
-            >
-              Row {item.index}
-            </div>
+          <div
+           style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              // transform: `translateX(${props.columnVirtualizer.getVirtualItems()[0]?.start}px) translateY(${props.rowVirtualizer.options.scrollMargin}px)`,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '10px',
+            }}
+          >
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+             <React.Fragment key={virtualRow.key}>
+              {
+                columnVirtualizer.getVirtualItems().map((virtualColumn) => (
+                  <div
+                    key={virtualColumn.key}
+                    className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
+                    style={{
+                      transform: `translateY(${
+                        virtualRow.start - rowVirtualizer.options.scrollMargin
+                      }px)`,
+                    }}
+                  >
+                    Row {virtualRow.index} column: {virtualColumn.index}
+                  </div>
+                    ))
+                  }
+            </React.Fragment>
           ))}
+            </div>
         </div>
       </div>
     </>

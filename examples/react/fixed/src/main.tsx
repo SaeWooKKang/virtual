@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom/client'
 import './index.css'
 
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { GridVirtualizerTemplate } from './GridVirtualizerTemplate';
 
 function App() {
   return (
@@ -94,7 +95,7 @@ function ColumnVirtualizerFixed() {
 
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
-    count: 10000,
+    count: 2,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 100,
     overscan: 5,
@@ -143,7 +144,7 @@ function ColumnVirtualizerFixed() {
 }
 
 function GridVirtualizerFixed() {
-  const parentRef = React.useRef(null)
+  const parentRef = React.useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
     count: 10000,
@@ -154,7 +155,7 @@ function GridVirtualizerFixed() {
 
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
-    count: 10000,
+    count: 3,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 100,
     overscan: 5,
@@ -162,52 +163,19 @@ function GridVirtualizerFixed() {
 
   return (
     <>
-      <div
-        ref={parentRef}
-        className="List"
-        style={{
-          height: `500px`,
-          width: `500px`,
-          overflow: 'auto',
+      <GridVirtualizerTemplate 
+        parentRef={parentRef}
+        columnVirtualizer={columnVirtualizer}
+        rowVirtualizer={rowVirtualizer}
+        renderItem={(rowIndex, columnIndex) => (
+          <div>rowIndex: {rowIndex} columnIndex: {columnIndex}</div>
+        )}
+        list={{
+          style:{
+            gridTemplateColumns: '1fr 1fr 1fr'
+          }
         }}
-      >
-        <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            width: `${columnVirtualizer.getTotalSize()}px`,
-            position: 'relative',
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-            <React.Fragment key={virtualRow.key}>
-              {columnVirtualizer.getVirtualItems().map((virtualColumn) => (
-                <div
-                  key={virtualColumn.key}
-                  className={
-                    virtualColumn.index % 2
-                      ? virtualRow.index % 2 === 0
-                        ? 'ListItemOdd'
-                        : 'ListItemEven'
-                      : virtualRow.index % 2
-                        ? 'ListItemOdd'
-                        : 'ListItemEven'
-                  }
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: `${virtualColumn.size}px`,
-                    height: `${virtualRow.size}px`,
-                    transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
-                  }}
-                >
-                  Cell {virtualRow.index}, {virtualColumn.index}
-                </div>
-              ))}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
+      />
     </>
   )
 }
