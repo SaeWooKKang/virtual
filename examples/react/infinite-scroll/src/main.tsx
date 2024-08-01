@@ -8,7 +8,7 @@ import {
 
 import './index.css'
 
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useVirtualizer, useWindowVirtualizer } from '@tanstack/react-virtual'
 
 const queryClient = new QueryClient()
 
@@ -45,9 +45,10 @@ function App() {
 
   const parentRef = React.useRef()
 
-  const rowVirtualizer = useVirtualizer({
+  const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
-    getScrollElement: () => parentRef.current,
+    // getScrollElement: () => parentRef.current,
+    scrollMargin: parentRef.current?.offsetTop ?? 0,
     estimateSize: () => 100,
     overscan: 5,
   })
@@ -95,14 +96,15 @@ function App() {
           ref={parentRef}
           className="List"
           style={{
-            height: `500px`,
-            width: `100%`,
-            overflow: 'auto',
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            // height: `500px`,
+            // width: `100%`,
+            // overflow: 'auto',
           }}
         >
           <div
             style={{
-              height: `${rowVirtualizer.getTotalSize()}px`,
+              
               width: '100%',
               position: 'relative',
             }}
@@ -123,7 +125,10 @@ function App() {
                     left: 0,
                     width: '100%',
                     height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start}px)`,
+                    // transform: `translateY(${virtualRow.start}px)`,
+                    transform: `translateY(${
+                      virtualRow.start - rowVirtualizer.options.scrollMargin
+                    }px)`,
                   }}
                 >
                   {isLoaderRow
